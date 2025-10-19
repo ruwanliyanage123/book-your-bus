@@ -5,11 +5,13 @@ import com.bookingbus.bookingbus.dto.ReservationDTO;
 import com.bookingbus.bookingbus.dto.TicketReservationRequestDTO;
 import com.bookingbus.bookingbus.dto.TicketReservationResponseDTO;
 import com.bookingbus.bookingbus.service.BookingService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
 public class BookingServiceImpl implements BookingService {
     private static final char A = 'A';
@@ -21,6 +23,11 @@ public class BookingServiceImpl implements BookingService {
     private int ticketNumberCounter = 0;
 
     public BookingServiceImpl() {
+        initiateSeats();
+        log.info("Empty Seats allocated for both journeys");
+    }
+
+    private void initiateSeats(){
         for (int i = 0; i < upJourney.length; i++) {
             char seatRow;
             if (i == 0) {
@@ -43,6 +50,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public AvailabilityAndPriceResponseDTO checkAvailabilityAndPrice(Integer numberOfPassengers, Character origin, Character destination) {
+        log.info("Checking availability and price for {} passengers from {} to {}", numberOfPassengers, origin, destination);
         if (numberOfPassengers <= 0) {
             throw new IllegalArgumentException("Number of passengers must be greater than zero");
         }
@@ -85,13 +93,17 @@ public class BookingServiceImpl implements BookingService {
             seatNumbers.add(seat.getSeatNumber());
         }
         final double totalPrice = calculatePrice(origin, destination, passengerCount);
+        log.info("Reserved {} tickets from {} to {}. Ticket Numbers: {}, Seat Numbers: {}, Total Price: {}",
+                passengerCount, origin, destination, ticketNumbers, seatNumbers, totalPrice);
         return new TicketReservationResponseDTO(ticketNumbers, seatNumbers, origin, destination, totalPrice);
     }
 
     public List<ReservationDTO> getAvailableSeats(char origin, char destination) {
         if (origin < destination) {
+            log.info("Getting available seats from {} to {} and up journey selected", origin, destination);
             return getAvailableSeats(origin, destination, upJourney);
         } else if (origin > destination) {
+            log.info("Getting available seats from {} to {} and down journey selected", origin, destination);
             return getAvailableSeats(origin, destination, downJourney);
         } else {
             throw new IllegalArgumentException("Invalid origin or destination selection");
@@ -99,6 +111,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private List<ReservationDTO> getAvailableSeats(char origin, char destination, ReservationDTO[][] journey) {
+        log.info("Getting available seats for journey from {} to {}", origin, destination);
         final List<ReservationDTO> availableSeats = new ArrayList<>();
         for (ReservationDTO[] seat : journey) {
             for (final ReservationDTO reservationDTO : seat) {
@@ -137,7 +150,9 @@ public class BookingServiceImpl implements BookingService {
         } else {
             throw new IllegalArgumentException("Invalid route");
         }
-        return unitPrice * numberOfPassengers;
+        double total = unitPrice * numberOfPassengers;
+        log.info("Calculated total price: {} for journey from {} to {}", total, origin, destination);
+        return total;
     }
 
     private boolean isValidTown(char town) {
