@@ -137,3 +137,18 @@ BUILD SUCCESS
 | B → C / C → B | 50 |
 | B → D / D → B | 100 |
 | C → D / D → C | 50 |
+
+## 🐳 Run with Docker
+
+You can containerize and run this Spring Boot WAR easily using Docker.
+
+### Build the Docker image
+```bash
+docker build -t bookingbus .
+```
+
+
+### Run the Docker container
+```bash
+docker run -d -p 8080:8080 --name bookingbus-container bookingbus
+```
