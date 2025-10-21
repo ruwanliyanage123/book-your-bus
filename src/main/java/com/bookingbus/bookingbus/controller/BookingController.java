@@ -35,7 +35,7 @@ public class BookingController {
     ) {
         try {
             final AvailabilityAndPriceResponseDTO responseDTO = bookingService.checkAvailabilityAndPrice(numberOfPassengers, origin, destination);
-            log.info("----------"+Thread.currentThread().getName()+"--------------seats-available: " + responseDTO.getAvailableSeats());
+            log.info("----------"+Thread.currentThread().getName()+"--------------seats-available: " + responseDTO.getAvailableSeats().size());
             return new ResponseEntity<>(responseDTO, HttpStatus.OK);
         } catch (Exception exception) {
             return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);

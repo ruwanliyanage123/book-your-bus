@@ -80,6 +80,7 @@ public class BookingServiceImpl implements BookingService {
             throw new IllegalArgumentException("Invalid origin or destination");
         }
         final List<ReservationDTO> availableSeats = getAvailableSeats(reservationRequestDTO.getOrigin(), reservationRequestDTO.getDestination());
+        log.info("@@@@@@@@@ Available seats for reservation: {} @@@@@@@", availableSeats.size());
         if (availableSeats.size() < reservationRequestDTO.getPassengerCount()) {
             throw new IllegalArgumentException("Not enough available seats");
         }
