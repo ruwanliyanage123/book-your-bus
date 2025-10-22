@@ -10,6 +10,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Service
@@ -20,7 +23,10 @@ public class BookingServiceImpl implements BookingService {
     private static final char D = 'D';
     private final ReservationDTO[][] upJourney = new ReservationDTO[4][10];
     private final ReservationDTO[][] downJourney = new ReservationDTO[4][10];
-    private int ticketNumberCounter = 0;
+    private final AtomicBoolean isWriting = new AtomicBoolean(false);
+    private final AtomicBoolean isReading = new AtomicBoolean(false);
+    private final AtomicInteger ticketNumberCounter = new AtomicInteger(0);
+    private final Object lock = new Object();
 
     public BookingServiceImpl() {
         initiateSeats();
@@ -84,15 +90,19 @@ public class BookingServiceImpl implements BookingService {
         if (availableSeats.size() < reservationRequestDTO.getPassengerCount()) {
             throw new IllegalArgumentException("Not enough available seats");
         }
+        waitExecution(isReading, "Write");
+        isWriting.set(true);
         for (int i = 0; i < passengerCount; i++) {
             ReservationDTO seat = availableSeats.get(i);
-            ticketNumberCounter += 1;
-            seat.setTicketNumber(ticketNumberCounter);
+            int ticketNumber = ticketNumberCounter.addAndGet(1);
+            seat.setTicketNumber(ticketNumber);
             seat.setOrigin(origin);
             seat.setDestination(destination);
-            ticketNumbers.add(ticketNumberCounter);
+            ticketNumbers.add(ticketNumber);
             seatNumbers.add(seat.getSeatNumber());
         }
+        isWriting.set(false);
+        notifyExecution("Write");
         final double totalPrice = calculatePrice(origin, destination, passengerCount);
         log.debug("Reserved {} tickets from {} to {}. Ticket Numbers: {}, Seat Numbers: {}, Total Price: {}",
                 passengerCount, origin, destination, ticketNumbers, seatNumbers, totalPrice);
@@ -113,6 +123,8 @@ public class BookingServiceImpl implements BookingService {
 
     private List<ReservationDTO> getAvailableSeats(char origin, char destination, ReservationDTO[][] journey) {
         log.debug("Getting available seats for journey from {} to {}", origin, destination);
+        waitExecution(isWriting, "Read");
+        isReading.set(true);
         final List<ReservationDTO> availableSeats = new ArrayList<>();
         for (ReservationDTO[] seat : journey) {
             for (final ReservationDTO reservationDTO : seat) {
@@ -131,6 +143,8 @@ public class BookingServiceImpl implements BookingService {
                 }
             }
         }
+        isReading.set(false);
+        notifyExecution("Read");
         return availableSeats;
     }
 
@@ -154,6 +168,27 @@ public class BookingServiceImpl implements BookingService {
         double total = unitPrice * numberOfPassengers;
         log.debug("Calculated total price: {} for journey from {} to {}", total, origin, destination);
         return total;
+    }
+
+    private void waitExecution(AtomicBoolean flag, String operation){
+        synchronized (lock){
+            if(flag.get()){
+                try {
+                    log.debug(operation + " operation waiting for other operation to complete");
+                    wait();
+                } catch (InterruptedException e) {
+                    log.error("Thread interrupted while waiting for write operation to complete", e);
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
+
+    public void notifyExecution(String operation){
+        synchronized (lock){
+            log.debug("Notify all the operation waiting for other operation to complete");
+            notifyAll();
+        }
     }
 
     private boolean isValidTown(char town) {

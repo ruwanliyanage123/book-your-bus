@@ -34,6 +34,7 @@ public class BookingController {
             @RequestParam Character destination
     ) {
         try {
+            log.info("----------"+Thread.currentThread().getName()+"-------start-------seats-available: ");
             final AvailabilityAndPriceResponseDTO responseDTO = bookingService.checkAvailabilityAndPrice(numberOfPassengers, origin, destination);
             log.info("----------"+Thread.currentThread().getName()+"--------------seats-available: " + responseDTO.getAvailableSeats().size());
             return new ResponseEntity<>(responseDTO, HttpStatus.OK);
