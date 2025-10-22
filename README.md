@@ -20,26 +20,19 @@ Before building or running the project, ensure the following tools are installed
 Clone the repository and navigate into it:
 ```bash
 git clone https://github.com/ruwanliyanage123/book-your-bus.git
-cd bookingbus
+cd book-your-bus
 ```
 Build the project and create a WAR file:
 ```bash
 mvn clean package
 ```
-After building, the WAR file will be generated at:
-```
-target/bookingbus-0.0.1-SNAPSHOT.war
-```
+After building, the WAR file will be generated at: target/bookingbus-1.0.0.war
 
 ## How to Run the Project
 ### Run directly (self-contained WAR)
 You can execute the WAR directly using Java:
 ```bash
-java -jar target/bookingbus-0.0.1-SNAPSHOT.war
-```
-Access the application in your browser:
-```
-http://localhost:8080
+java -jar target/bookingbus-1.0.0.war
 ```
 
 ## REST API Documentation
@@ -137,18 +130,3 @@ BUILD SUCCESS
 | B → C / C → B | 50 |
 | B → D / D → B | 100 |
 | C → D / D → C | 50 |
-
-## 🐳 Run with Docker
-
-You can containerize and run this Spring Boot WAR easily using Docker.
-
-### Build the Docker image
-```bash
-docker build -t bookingbus .
-```
-
-
-### Run the Docker container
-```bash
-docker run -d -p 8080:8080 --name bookingbus-container bookingbus
-```
