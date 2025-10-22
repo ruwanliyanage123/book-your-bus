@@ -11,8 +11,8 @@ public interface BookingService {
      * Check availability and price for given number of passengers, origin and destination
      *
      * @param numberOfPassengers number of passengers
-     * @param origin origin
-     * @param destination destination
+     * @param origin             origin
+     * @param destination        destination
      * @return AvailabilityAndPriceResponseDTO containing available seats and total price
      */
     AvailabilityAndPriceResponseDTO checkAvailabilityAndPrice(Integer numberOfPassengers, Character origin, Character destination);

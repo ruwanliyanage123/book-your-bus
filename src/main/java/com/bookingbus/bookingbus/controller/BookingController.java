@@ -34,11 +34,11 @@ public class BookingController {
             @RequestParam Character destination
     ) {
         try {
-            log.info("----------"+Thread.currentThread().getName()+"-------start-------seats-available: ");
+            log.info("Start:- Checking availability and price for {} passengers from {} to {}", numberOfPassengers, origin, destination);
             final AvailabilityAndPriceResponseDTO responseDTO = bookingService.checkAvailabilityAndPrice(numberOfPassengers, origin, destination);
-            log.info("----------"+Thread.currentThread().getName()+"--------------seats-available: " + responseDTO.getAvailableSeats().size());
             return new ResponseEntity<>(responseDTO, HttpStatus.OK);
         } catch (Exception exception) {
+            log.error("Error checking availability and price: {}", exception.getMessage());
             return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
@@ -46,10 +46,11 @@ public class BookingController {
     @PostMapping(value = "/tickets", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> reserveTickets(@RequestBody TicketReservationRequestDTO ticketReservationRequestDTO) {
         try {
+            log.info("Start:- Reserving tickets for request: {}", ticketReservationRequestDTO);
             final TicketReservationResponseDTO responseDTO = bookingService.reserveTickets(ticketReservationRequestDTO);
-            log.info("+++++++++"+Thread.currentThread().getName()+"++++++++++++++ticket numbers: " + responseDTO.getTicketNumbers() );
             return new ResponseEntity<>(responseDTO, HttpStatus.OK);
         } catch (Exception exception) {
+            log.error("Error reserving tickets: {}", exception.getMessage());
             return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }

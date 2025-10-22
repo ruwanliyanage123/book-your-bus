@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -33,7 +32,7 @@ public class BookingServiceImpl implements BookingService {
         log.debug("Empty Seats allocated for both journeys");
     }
 
-    private void initiateSeats(){
+    private void initiateSeats() {
         for (int i = 0; i < upJourney.length; i++) {
             char seatRow;
             if (i == 0) {
@@ -56,7 +55,6 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public AvailabilityAndPriceResponseDTO checkAvailabilityAndPrice(Integer numberOfPassengers, Character origin, Character destination) {
-        log.debug("Checking availability and price for {} passengers from {} to {}", numberOfPassengers, origin, destination);
         if (numberOfPassengers <= 0) {
             throw new IllegalArgumentException("Number of passengers must be greater than zero");
         }
@@ -86,7 +84,7 @@ public class BookingServiceImpl implements BookingService {
             throw new IllegalArgumentException("Invalid origin or destination");
         }
         final List<ReservationDTO> availableSeats = getAvailableSeats(reservationRequestDTO.getOrigin(), reservationRequestDTO.getDestination());
-        log.info("@@@@@@@@@ Available seats for reservation: {} @@@@@@@", availableSeats.size());
+        log.info("Available seats for reservation: {}", availableSeats.size());
         if (availableSeats.size() < reservationRequestDTO.getPassengerCount()) {
             throw new IllegalArgumentException("Not enough available seats");
         }
@@ -170,12 +168,12 @@ public class BookingServiceImpl implements BookingService {
         return total;
     }
 
-    private void waitExecution(AtomicBoolean flag, String operation){
-        synchronized (lock){
-            if(flag.get()){
+    private void waitExecution(AtomicBoolean flag, String operation) {
+        synchronized (lock) {
+            if (flag.get()) {
                 try {
                     log.debug(operation + " operation waiting for other operation to complete");
-                    wait();
+                    lock.wait();
                 } catch (InterruptedException e) {
                     log.error("Thread interrupted while waiting for write operation to complete", e);
                     throw new RuntimeException(e);
@@ -184,10 +182,10 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
-    public void notifyExecution(String operation){
-        synchronized (lock){
+    public void notifyExecution(String operation) {
+        synchronized (lock) {
             log.debug("Notify all the operation waiting for other operation to complete");
-            notifyAll();
+            lock.notifyAll();
         }
     }
 
